@@ -5,7 +5,7 @@ This is a basic example for using Support Vector Machines in machine learning.
 `npm install`
 
 # Execution
-`nodejs index.js`
+`node index.js`
 
 Point your browser to: http://localhost:8080
 
