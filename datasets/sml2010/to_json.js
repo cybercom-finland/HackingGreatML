@@ -19,7 +19,6 @@ var index = 0;
 var internalData = [];
 var externalData = [];
 lineReader.on('line', (line) => {
-  index++;
   if (index > 0) {
     const data = line.split(' ');
     internalData.push({
@@ -31,6 +30,7 @@ lineReader.on('line', (line) => {
       h: data[externalHumidityIndex]
     });
   }
+  index++;
 }).on('close', () => {
   // We have 2765 data items in the example data for internal and
   // for external measurements.
