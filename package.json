@@ -1,0 +1,13 @@
+{
+  "name": "mlHack",
+  "version": "0.0.0",
+  "description": "A template for hacking with machine learning.",
+  "main": "index.js",
+  "scripts": {},
+  "author": "Tero Keski-Valkama <tero.keski-valkama@cybercom.com>",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "lodash": "^4.3.0"
+  }
+}
