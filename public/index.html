@@ -3,12 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <title>Machine learning example</title>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script type="text/javascript">
+  angular.module('app', [])
+  .run(($http) => {
+    google.charts.load('current', {'packages':['corechart','scatter']});
+    let outdoorChart, indoorChart, bothChart, indoorData, outdoorData;
+    const chartPromise = new Promise((resolve, reject) => {
+      function chartLoaded() {
+        outdoorChart = new google.visualization.ScatterChart(document.getElementById('outdoor_div'));
+        indoorChart = new google.visualization.ScatterChart(document.getElementById('indoor_div'));
+        bothChart = new google.visualization.ScatterChart(document.getElementById('both_div'));
+        resolve();
+      };
+      google.charts.setOnLoadCallback(chartLoaded);
+    }).then(() => {
+      return $http.get('/train/indoor.json');
+
+    }).then((indoorDataResponse) => {
+      indoorData = indoorDataResponse;
+      const dataRows = indoorData.data.map((item) => {
+        return {c: [{v: new Number(item.t)}, {v: new Number(item.h)}]};
+      });
+      const data = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity', label: 'Humidity', type: 'number'}],
+        rows: dataRows
+      });
+      const indoorDataRows = indoorData.data.map((item) => [new Number(item.t), new Number(item.h)]);
+      // ... is the ES6 spread operator
+      const minT = Math.min(...indoorDataRows.map((item) => item[0]));
+      const maxT = Math.max(...indoorDataRows.map((item) => item[0]));
+      const minH = Math.min(...indoorDataRows.map((item) => item[1]));
+      const maxH = Math.max(...indoorDataRows.map((item) => item[1]));
+
+      const options = {
+        title: 'Temperature vs Humidity, Indoors',
+        hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+        vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+        legend: 'none',
+        colors: ["#109010"]
+      };
+      indoorChart.draw(data, google.charts.Scatter.convertOptions(options));
+      return $http.get('/train/outdoor.json');
+    }).then((outdoorDataResponse) => {
+      outdoorData = outdoorDataResponse;
+      const dataRows = outdoorData.data.map((item) => {
+        return {c: [{v: new Number(item.t)}, {v: new Number(item.h)}]};
+      });
+      const data = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity', label: 'Humidity', type: 'number'}
+               ],
+        rows: dataRows
+      });
+      const outdoorDataRows = outdoorData.data.map((item) => [new Number(item.t), new Number(item.h)]);
+      // ... is the ES6 spread operator
+      const minT = Math.min(...outdoorDataRows.map((item) => item[0]));
+      const maxT = Math.max(...outdoorDataRows.map((item) => item[0]));
+      const minH = Math.min(...outdoorDataRows.map((item) => item[1]));
+      const maxH = Math.max(...outdoorDataRows.map((item) => item[1]));
+
+      const options = {
+        title: 'Temperature vs Humidity, Outdoors',
+        hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+        vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+        legend: 'none',
+        colors: ["#101090"]
+      };
+      outdoorChart.draw(data, google.charts.Scatter.convertOptions(options));
+    }).then(() => {
+      const dataRows = outdoorData.data.map((item) => {
+        return {c: [{v: new Number(item.t)}, {v: new Number(item.h)}, null]};
+      }).concat(indoorData.data.map((item) => {
+        return {c: [{v: new Number(item.t)}, null, {v: new Number(item.h)}]};
+      }));
+      const data = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity-out', label: 'Humidity, outdoors', type: 'number'},
+               {id: 'humidity-in', label: 'Humidity, indoors', type: 'number'}
+               ],
+        rows: dataRows
+      });
+      const bothDataRows = outdoorData.data.concat(indoorData.data).map((item) => [new Number(item.t), new Number(item.h)]);
+      // ... is the ES6 spread operator
+      const minT = Math.min(...bothDataRows.map((item) => item[0]));
+      const maxT = Math.max(...bothDataRows.map((item) => item[0]));
+      const minH = Math.min(...bothDataRows.map((item) => item[1]));
+      const maxH = Math.max(...bothDataRows.map((item) => item[1]));
+
+      const options = {
+        title: 'Temperature vs Humidity, both',
+        hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+        vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+        legend: 'none',
+        colors: ["#101090","#109010"],
+        pointSize: 2
+      };
+      bothChart.draw(data, google.charts.Scatter.convertOptions(options));
+    });
+  });
+</script>
 </head>
 
-<body>
+<body ng-app="app">
   <p>
     Machine learning example.
   </p>
+  <h1>Indoor:</h1>
+  <div id="indoor_div" style="width: 500px; height: 500px;">
+  </div>
+  <h1>Outdoor:</h1>
+  <div id="outdoor_div" style="width: 500px; height: 500px;">
+  </div>
+  <h1>Both:</h1>
+  <div id="both_div" style="width: 500px; height: 500px;">
+  </div>
 </body>
 
 </html> 
