@@ -14,10 +14,14 @@
     google.charts.load('current', {'packages':['corechart','scatter']});
 
     // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
-    let rawDataChart, indoorData, outdoorData, indoorTestData, outdoorTestData;
+    let rawDataChart, regionChart,
+      indoorData, outdoorData, indoorTestData, outdoorTestData,
+      minT, minH, maxT, maxH;
+    
     const chartPromise = new Promise((resolve, reject) => {
       function chartLoaded() {
         rawDataChart = new google.visualization.ScatterChart(document.getElementById('raw-data-chart-div'));
+        regionChart = new google.visualization.ScatterChart(document.getElementById('region-chart-div'));
         resolve();
       };
       google.charts.setOnLoadCallback(chartLoaded);
@@ -50,11 +54,11 @@
         rows: dataRows
       });
       const bothDataRows = outdoorData.concat(indoorData).map((item) => [item.t, item.h]);
-      // ... is the ES6 spread operator
-      const minT = Math.min(...bothDataRows.map((item) => item[0]));
-      const maxT = Math.max(...bothDataRows.map((item) => item[0]));
-      const minH = Math.min(...bothDataRows.map((item) => item[1]));
-      const maxH = Math.max(...bothDataRows.map((item) => item[1]));
+      // ... is the ES6 spread operator. Simply calculating min and max here.
+      minT = Math.min(...bothDataRows.map((item) => item[0]));
+      maxT = Math.max(...bothDataRows.map((item) => item[0]));
+      minH = Math.min(...bothDataRows.map((item) => item[1]));
+      maxH = Math.max(...bothDataRows.map((item) => item[1]));
 
       const options = {
         title: 'Temperature vs Humidity',
@@ -70,14 +74,15 @@
       // Here the actual Support Vector Machine initialization and execution happens:
       const data = outdoorData.map((item) => [item.t, item.h]).concat(
           indoorData.map((item) => [item.t, item.h]));
-      //const data = [[0,0], [0,1], [1,0], [1,1]];
-      //const labels = [-1, 1, 1, -1];
       
       // This designates the target labels (-1 and 1) for the sets. We will set -1 for outdoors, 1 for indoors.
       const labels = outdoorData.map(() => -1).concat(indoorData.map(() => 1));
       const svm = new svmjs.SVM();
-      const svmC = 1.0;
+      const svmC = 0.5;
       const rbfKernelSigma = 1.0;
+      
+      // The training happens here. This takes a long time for a lot of data.
+      // FIXME: Move this to a web worker.
       svm.train(data, labels, { kernel: 'rbf', rbfsigma: 0.5, C: svmC});
 
       const testData = outdoorTestData.map((item) => [item.t, item.h]).concat(
@@ -85,13 +90,47 @@
       const correctLabels = outdoorTestData.map(() => -1).concat(indoorTestData.map(() => 1));
 
       const testLabels = svm.predict(testData);
-      console.log(JSON.stringify(testLabels));
+      // console.log(JSON.stringify(testLabels));
       
       // Counting incorrect classifications of the test data:
       const correctCount = _.zip(testLabels, correctLabels).map((pair) => (pair[0] == pair[1])).filter((item) => item).length;
       const resultText = correctCount + " / " + testData.length + " predicted correctly."
       console.log(resultText);
       document.getElementById('results').innerHTML = resultText;
+
+      // Drawing the regions, iterating over T and H:
+      let spanRegion = [];
+      const deltaH = (maxH-minH)/100;
+      const deltaT = (maxT-minT)/100;
+      for (let t = minT; t < maxT; t+=deltaT) for (let h = minH; h < maxH; h+=deltaH) {
+        spanRegion.push([t, h]);
+      }
+      const predictedRegion = svm.predict(spanRegion);
+
+      // Converting to weird Google Charts format...
+      const regionChartRows = predictedRegion.map((item, index) => {
+        if (item === -1) {
+          return {c: [{v: spanRegion[index][0]}, {v: spanRegion[index][1]}, null]};
+        } else {
+          return {c: [{v: spanRegion[index][0]}, null, {v: spanRegion[index][1]}]};
+        }
+      });
+      const options = {
+          title: 'Temperature vs Humidity regions',
+          hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+          vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+          // legend: 'none',
+          colors: ["#101090","#109010"],
+          pointSize: 2
+        };
+      const regionDataTable = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity-out', label: 'outdoors', type: 'number'},
+               {id: 'humidity-in', label: 'indoors', type: 'number'}
+               ],
+        rows: regionChartRows
+      });
+      regionChart.draw(regionDataTable, google.charts.Scatter.convertOptions(options));
     });
   });
 </script>
@@ -104,6 +143,9 @@
   </p>
   <h1>Humidity against Temperature Indoors and Outdoors</h1>
   <div id="raw-data-chart-div" style="width: 800px; height: 500px;">
+  </div>
+  <h1>Estimated regions</h1>
+  <div id="region-chart-div" style="width: 800px; height: 500px;">
   </div>
   <p id="results"></p>
 </body>
