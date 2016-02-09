@@ -22,12 +22,12 @@ lineReader.on('line', (line) => {
   if (index > 0) {
     const data = line.split(' ');
     internalData.push({
-      t: data[internalTempIndex],
-      h: data[internalHumidityIndex]
+      t: new Number(data[internalTempIndex]),
+      h: new Number(data[internalHumidityIndex])
     });
     externalData.push({
-      t: data[externalTempIndex],
-      h: data[externalHumidityIndex]
+      t: new Number(data[externalTempIndex]),
+      h: new Number(data[externalHumidityIndex])
     });
   }
   index++;
