@@ -48,8 +48,8 @@ lineReader.on('line', (line) => {
   // if the model predicts their classes correctly.
   // Validation set is used to prove you haven't accidentally cheated in tuning your model.
 
-  _.shuffle(internalData);
-  _.shuffle(externalData);
+  internalData = _.shuffle(internalData);
+  externalData = _.shuffle(externalData);
 
   const cutoffIndex = Math.floor(internalData.length / 3),
     cutoffIndex2 = Math.floor(internalData.length / 3 * 2),
