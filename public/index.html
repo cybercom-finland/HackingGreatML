@@ -6,11 +6,15 @@
 <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash.min.js"></script>
+<script type="text/javascript" src="lib/svm/svm.js"></script>
 <script type="text/javascript">
   angular.module('app', [])
   .run(($http) => {
     google.charts.load('current', {'packages':['corechart','scatter']});
-    let rawDataChart, indoorData, outdoorData;
+
+    // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
+    let rawDataChart, indoorData, outdoorData, indoorTestData, outdoorTestData;
     const chartPromise = new Promise((resolve, reject) => {
       function chartLoaded() {
         rawDataChart = new google.visualization.ScatterChart(document.getElementById('raw-data-chart-div'));
@@ -20,17 +24,23 @@
     }).then(() => {
       return $http.get('/train/indoor.json');
     }).then((indoorDataResponse) => {
-      indoorData = indoorDataResponse;
+      indoorData = indoorDataResponse.data;
       return $http.get('/train/outdoor.json');
     }).then((outdoorDataResponse) => {
-      outdoorData = outdoorDataResponse;
+      outdoorData = outdoorDataResponse.data;
+      return $http.get('/test/indoor.json');
+    }).then((indoorDataResponse) => {
+      indoorTestData = indoorDataResponse.data;
+      return $http.get('/test/outdoor.json');
+    }).then((outdoorDataResponse) => {
+      outdoorTestData = outdoorDataResponse.data;
     }).then(() => {
       
       // Google Charts have this weird way of handling multiple sets, by setting the other value as null.
-      const dataRows = outdoorData.data.map((item) => {
-        return {c: [{v: new Number(item.t)}, {v: new Number(item.h)}, null]};
-      }).concat(indoorData.data.map((item) => {
-        return {c: [{v: new Number(item.t)}, null, {v: new Number(item.h)}]};
+      const dataRows = outdoorData.map((item) => {
+        return {c: [{v: item.t}, {v: item.h}, null]};
+      }).concat(indoorData.map((item) => {
+        return {c: [{v: item.t}, null, {v: item.h}]};
       }));
       const data = new google.visualization.DataTable({
         cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
@@ -39,7 +49,7 @@
                ],
         rows: dataRows
       });
-      const bothDataRows = outdoorData.data.concat(indoorData.data).map((item) => [new Number(item.t), new Number(item.h)]);
+      const bothDataRows = outdoorData.concat(indoorData).map((item) => [item.t, item.h]);
       // ... is the ES6 spread operator
       const minT = Math.min(...bothDataRows.map((item) => item[0]));
       const maxT = Math.max(...bothDataRows.map((item) => item[0]));
@@ -57,7 +67,31 @@
       // convertOptions is for using the new Material Charts.
       rawDataChart.draw(data, google.charts.Scatter.convertOptions(options));
     }).then(() => {
+      // Here the actual Support Vector Machine initialization and execution happens:
+      const data = outdoorData.map((item) => [item.t, item.h]).concat(
+          indoorData.map((item) => [item.t, item.h]));
+      //const data = [[0,0], [0,1], [1,0], [1,1]];
+      //const labels = [-1, 1, 1, -1];
       
+      // This designates the target labels (-1 and 1) for the sets. We will set -1 for outdoors, 1 for indoors.
+      const labels = outdoorData.map(() => -1).concat(indoorData.map(() => 1));
+      const svm = new svmjs.SVM();
+      const svmC = 1.0;
+      const rbfKernelSigma = 1.0;
+      svm.train(data, labels, { kernel: 'rbf', rbfsigma: 0.5, C: svmC});
+
+      const testData = outdoorTestData.map((item) => [item.t, item.h]).concat(
+          indoorTestData.map((item) => [item.t, item.h]));
+      const correctLabels = outdoorTestData.map(() => -1).concat(indoorTestData.map(() => 1));
+
+      const testLabels = svm.predict(testData);
+      console.log(JSON.stringify(testLabels));
+      
+      // Counting incorrect classifications of the test data:
+      const correctCount = _.zip(testLabels, correctLabels).map((pair) => (pair[0] == pair[1])).filter((item) => item).length;
+      const resultText = correctCount + " / " + testData.length + " predicted correctly."
+      console.log(resultText);
+      document.getElementById('results').innerHTML = resultText;
     });
   });
 </script>
@@ -71,6 +105,7 @@
   <h1>Humidity against Temperature Indoors and Outdoors</h1>
   <div id="raw-data-chart-div" style="width: 800px; height: 500px;">
   </div>
+  <p id="results"></p>
 </body>
 
 </html> 
