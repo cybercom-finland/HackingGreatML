@@ -10,13 +10,15 @@
 <script type="text/javascript" src="lib/svm/svm.js"></script>
 <script type="text/javascript">
   angular.module('app', [])
-  .run(($http) => {
+  .run(($http, $rootScope) => {
     google.charts.load('current', {'packages':['corechart','scatter']});
 
     // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
     let rawDataChart, regionChart,
       indoorData, outdoorData, indoorTestData, outdoorTestData,
       minT, minH, maxT, maxH;
+    const fastMode = true,
+      validateMode = false;
     
     const chartPromise = new Promise((resolve, reject) => {
       function chartLoaded() {
@@ -29,12 +31,26 @@
       return $http.get('/train/indoor.json');
     }).then((indoorDataResponse) => {
       indoorData = indoorDataResponse.data;
+      if (fastMode) {
+        indoorData = indoorData.slice(0,100);
+      }
       return $http.get('/train/outdoor.json');
     }).then((outdoorDataResponse) => {
       outdoorData = outdoorDataResponse.data;
+      if (fastMode) {
+        outdoorData = outdoorData.slice(0,100);
+      }
+      if (validateMode) {
+        // Only run this after testing and tuning. Otherwise it will affect your parameter choices.
+        return $http.get('/validate/indoor.json');
+      }
       return $http.get('/test/indoor.json');
     }).then((indoorDataResponse) => {
       indoorTestData = indoorDataResponse.data;
+      if (validateMode) {
+        // Only run this after testing and tuning. Otherwise it will affect your parameter choices.
+        return $http.get('/validate/outdoor.json');
+      }
       return $http.get('/test/outdoor.json');
     }).then((outdoorDataResponse) => {
       outdoorTestData = outdoorDataResponse.data;
@@ -78,12 +94,12 @@
       // This designates the target labels (-1 and 1) for the sets. We will set -1 for outdoors, 1 for indoors.
       const labels = outdoorData.map(() => -1).concat(indoorData.map(() => 1));
       const svm = new svmjs.SVM();
-      const svmC = 0.5;
-      const rbfKernelSigma = 1.0;
+      const C = 1.0;
+      const σ = 3.0;
       
       // The training happens here. This takes a long time for a lot of data.
       // FIXME: Move this to a web worker.
-      svm.train(data, labels, { kernel: 'rbf', rbfsigma: 0.5, C: svmC});
+      svm.train(data, labels, { kernel: 'rbf', rbfsigma: σ, C: C});
 
       const testData = outdoorTestData.map((item) => [item.t, item.h]).concat(
           indoorTestData.map((item) => [item.t, item.h]));
@@ -94,9 +110,12 @@
       
       // Counting incorrect classifications of the test data:
       const correctCount = _.zip(testLabels, correctLabels).map((pair) => (pair[0] == pair[1])).filter((item) => item).length;
-      const resultText = correctCount + " / " + testData.length + " predicted correctly."
+      const resultText = correctCount + ' / ' + testData.length + ' predicted correctly. (' +
+          correctCount / testData.length * 100 + ' %). Parameter values: C: ' + C + ', σ: ' + σ;
       console.log(resultText);
-      document.getElementById('results').innerHTML = resultText;
+      $rootScope.$apply(() => {
+        $rootScope.results = resultText;
+      });
 
       // Drawing the regions, iterating over T and H:
       let spanRegion = [];
@@ -147,7 +166,7 @@
   <h1>Estimated regions</h1>
   <div id="region-chart-div" style="width: 800px; height: 500px;">
   </div>
-  <p id="results"></p>
+  <p id="results">{{results}}</p>
 </body>
 
 </html> 

@@ -15,6 +15,8 @@ serve('/train/indoor.json', 'datasets/sml2010/internalTrainingSet.json');
 serve('/train/outdoor.json', 'datasets/sml2010/externalTrainingSet.json');
 serve('/test/indoor.json', 'datasets/sml2010/internalTestSet.json');
 serve('/test/outdoor.json', 'datasets/sml2010/externalTestSet.json');
+serve('/validate/indoor.json', 'datasets/sml2010/internalValidationSet.json');
+serve('/validate/outdoor.json', 'datasets/sml2010/externalValidationSet.json');
 
 // For anything else, we will return index.html as is common with
 // single page apps.
