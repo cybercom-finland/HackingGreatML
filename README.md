@@ -33,7 +33,7 @@ So, considering a data matrix with 3 measurements of 2D input data (the column v
 --- | --- | ---
  a  |  b  |  c
 
-=
+ =
 
     |    |
 --- | --- | ---
@@ -48,7 +48,8 @@ g(\|a-a\|) | g(\|b-a\|) | g(\|c-a\|)
 g(\|a-b\|) | g(\|b-b\|) | g(\|b-c\|)
 g(\|a-c\|) | g(\|b-c\|) | g(\|c-c\|)
 
-=
+ =
+
      |      |
  --- |  --- |  ---
 g(0) | g(1) |  g(2)
