@@ -8,10 +8,15 @@
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash.min.js"></script>
 <script type="text/javascript" src="lib/svm/svm.js"></script>
+</head>
+
+<body ng-app="app">
 <script type="text/javascript">
+"use strict";
   angular.module('app', [])
   .run(($http, $rootScope) => {
-    google.charts.load('current', {'packages':['corechart','scatter']});
+    // Version 44 is buggy.
+    google.charts.load('43', {'packages':['corechart','scatter']});
 
     // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
     let rawDataChart, regionChart,
@@ -153,9 +158,6 @@
     });
   });
 </script>
-</head>
-
-<body ng-app="app">
   <p>
     Machine learning example.
     Source of the example data: <a href="https://archive.ics.uci.edu/ml/datasets/SML2010">SML2010</a>

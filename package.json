@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "description": "A template for hacking with machine learning.",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "start": "node index.js"
+  },
   "author": "Tero Keski-Valkama <tero.keski-valkama@cybercom.com>",
   "license": "ISC",
   "repository": "https://github.com/cybercom-finland/HackingGreatML.git",
