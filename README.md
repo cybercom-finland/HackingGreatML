@@ -30,11 +30,11 @@ simply a distance to the respective input data point mapped through a gaussian (
 Note, the next matrices and vectors and the equal signs look a bit weird, because Markdown does
 not support proper mathematical notation very well. So .= and weird tables it is.
 
-So, considering a data matrix with 3 measurements of 2D input data (the column vectors are input data vectors):
+So, considering a data matrix with 3 measurements (a, b, c) of 2D input data (the column vectors are input data vectors):
 
     |    |    |
 --- | --- | --- |
- a  |  b  |  c  |
+ *a*  |  *b*  |  *c*  |
 
  .=
 
@@ -47,9 +47,9 @@ Then the 3 training data points in the feature space matrix would be 3D (g is th
 
           |          |           |
    ---     |    ---     |    ---     |
-g(\|a-a\|) | g(\|b-a\|) | g(\|c-a\|) |
-g(\|a-b\|) | g(\|b-b\|) | g(\|b-c\|) |
-g(\|a-c\|) | g(\|b-c\|) | g(\|c-c\|) |
+g(\|*a*-*a*\|) | g(\|*b*-*a*\|) | g(\|*c*-*a*\|) |
+g(\|*a*-*b*\|) | g(\|*b*-*b*\|) | g(\|*b*-*c*\|) |
+g(\|*a*-*c*\|) | g(\|*b*-*c*\|) | g(\|*c*-*c*\|) |
 
  .=
 
