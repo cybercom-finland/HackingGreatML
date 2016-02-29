@@ -34,7 +34,7 @@ So, considering a data matrix with 3 measurements (a, b, c) of 2D input data (th
 
     |    |    |
 --- | --- | --- |
- *a*  |  *b*  |  *c*  |
+ **a**  |  **b**  |  **c**  |
 
  .=
 
@@ -47,9 +47,9 @@ Then the 3 training data points in the feature space matrix would be 3D (g is th
 
           |          |           |
    ---     |    ---     |    ---     |
-g(\|*a*-*a*\|) | g(\|*b*-*a*\|) | g(\|*c*-*a*\|) |
-g(\|*a*-*b*\|) | g(\|*b*-*b*\|) | g(\|*b*-*c*\|) |
-g(\|*a*-*c*\|) | g(\|*b*-*c*\|) | g(\|*c*-*c*\|) |
+g(\|**a**-**a**\|) | g(\|**b**-**a**\|) | g(\|**c**-**a**\|) |
+g(\|**a**-**b**\|) | g(\|**b**-**b**\|) | g(\|**b**-**c**\|) |
+g(\|**a**-**c**\|) | g(\|**b**-**c**\|) | g(\|**c**-**c**\|) |
 
  .=
 
