@@ -29,28 +29,27 @@ simply a distance to the respective input data point mapped through a gaussian (
 
 So, considering a data matrix with 3 measurements of 2D input data (the column vectors are input data vectors):
 
+--- | --- | ---
  a  |  b  |  c
 
-\=
+=
 
- 1  |  2  |  3
 --- | --- | ---
+ 1  |  2  |  3
  1  |  1  |  1
 
 Then the 3 training data points in the feature space matrix would be 3D (g is the gaussian bell function):
 
+   ---     |    ---     |    ---
 g(\|a-a\|) | g(\|b-a\|) | g(\|c-a\|)
-   ---     |    ---     |    ---
 g(\|a-b\|) | g(\|b-b\|) | g(\|b-c\|)
-   ---     |    ---     |    ---
 g(\|a-c\|) | g(\|b-c\|) | g(\|c-c\|)
 
-\=
+=
 
+ --- |  --- |  ---
 g(0) | g(1) |  g(2)
- --- |  --- |  ---
 g(1) | g(0) |  g(1)
- --- |  --- |  ---
 g(2) | g(2) |  g(0)
 
 In this higher dimensional space it is possible to define a single hyperplane to divide the training data points
