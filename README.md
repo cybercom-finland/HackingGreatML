@@ -92,6 +92,28 @@ Overfitting is tested by giving the system new, previously unseen data. If the s
 with this new validation data, than with the test data, then the system has overfitted, and everything should be thrown
 to trash.
 
+## Where to Go from Here
+
+For classifying data points into more than two classes, you can either use hierarchical classification (reclassifying a subclass), or for example Support Vector Clustering.
+
+Embedding data in a higher dimensional space is a good general trick to simplify the extraction of relevant features
+from the data. In a way this can be thought of as separating the nonlinear features from data points into somewhat
+more linear feature spaces. This can be useful also for example in encoding symbolic time series, embedding the intervals
+to previous symbol classes (a part of my personal research at the moment regarding interleaved symbolic time series).
+
+If your input data is not continuous valued numbers, but is for example symbolic, then you need different kinds of
+classifying algorithms.
+
+There is more to machine learning than classification. For example continual prediction is important when you need to
+predict the future.
+
+Deep neural networks, including Deep Belief Networks (Hinton et al.), Long Short-Term Memory, Convolutional Neural Networks (Ng. et al.) are a very active field in research. Both reinforced learning and
+transfer learning are relatively new fields allowing significantly smaller learning data amounts while still
+extracting working models.
+
+In general, machine learning is divided to supervised learning (you give training examples), unsupervised learning
+(no training examples, the system learns some structure from the raw data without guidance), and reinforced learning (where the system can experiment and gets rewards and punishments).
+
 # Screenshot
 
 ![alt text](pics/ml.png "Screenshot")
