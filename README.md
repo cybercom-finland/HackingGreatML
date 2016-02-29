@@ -27,6 +27,9 @@ as there are training data points) "feature space".
 The feature space is defined by using a "kernel trick", that is, each dimension in the feature space is
 simply a distance to the respective input data point mapped through a gaussian (or some other) function.
 
+Note, the next matrices and vectors and the equal signs look a bit weird, because Markdown does
+not support proper mathematical notation very well. So .= and weird tables it is.
+
 So, considering a data matrix with 3 measurements of 2D input data (the column vectors are input data vectors):
 
     |    |    |
