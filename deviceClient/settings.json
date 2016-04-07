@@ -1,0 +1,16 @@
+{
+  "s7Settings": {
+    "ipAddress": "192.168.0.10",
+    "rack": 0,
+    "slot": 1,
+    "diStart": 0,
+    "diSize": 3,
+    "doStart": 0,
+    "doSize": 3,
+    "mStart": 0,
+    "mSize": 3,
+    "dbNumber": 0,
+    "dbStart": 0,
+    "dbSize": 3
+  }
+}

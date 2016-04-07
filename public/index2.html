@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>HackingGreat2</title>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script>
+    $( document ).ready(function() {
+      console.log( 'ready');
+      var socket = io();
+      socket.emit('test message', 'test');
+      socket.on('test message', function(msg) {
+        console.log( 'test message: ' + msg);
+      })
+    });
+  </script>
+</head>
+
+<body>
+HackingGreat2
+</body>
+</html>

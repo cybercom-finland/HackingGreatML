@@ -1,6 +1,9 @@
 const express = require('express');
 const path = require('path');
 const app = express();
+const http = require('http').Server(app);
+const io = require('socket.io')(http);
+
 
 function serve(where, what) {
   app.get(where, (req, res) => {
@@ -18,12 +21,25 @@ serve('/test/outdoor.json', 'datasets/sml2010/externalTestSet.json');
 serve('/validate/indoor.json', 'datasets/sml2010/internalValidationSet.json');
 serve('/validate/outdoor.json', 'datasets/sml2010/externalValidationSet.json');
 
+app.get('/siemens', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index2.html'));
+});
+
 // For anything else, we will return index.html as is common with
 // single page apps.
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-app.listen(8080);
-console.log('Listening in http://localhost:8080');
+// Socket io
+io.on('connection', (socket) => {
+  console.log('socket.io: User connected');
+  socket.on('test message', (msg) => {
+    console.log('socket.io: test message: ' + msg);
+    io.emit('test message', msg);
+  });
+});
 
+http.listen(8080, () => {
+    console.log('Listening in http://localhost:8080');
+});

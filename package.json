@@ -12,6 +12,8 @@
   "dependencies": {
     "express": "^4.13.4",
     "lodash": "^4.3.0",
+    "node-snap7": "^0.2.2",
+    "socket.io": "^1.4.5",
     "svm": "https://github.com/karpathy/svmjs.git"
   }
 }
