@@ -4,9 +4,9 @@ This repository contains the initial codebase for all the three tech tracks in H
 
 # Instructions
 
-* [README-IOT.md](IoT track)
-* [README-VIS.md](Visualization track)
-* [README-ML.md](Suport Vector Machines track)
+* [IoT track](README-IOT.md)
+* [Visualization track](README-VIS.md)
+* [Support Vector Machines track](README-ML.md)
 
 # Installation
 `npm install`
