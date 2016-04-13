@@ -25,6 +25,10 @@ app.get('/siemens', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index2.html'));
 });
 
+app.get('/charts', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/charts.html'));
+});
+
 // For anything else, we will return index.html as is common with
 // single page apps.
 app.use((req, res) => {
@@ -36,7 +40,7 @@ io.on('connection', (socket) => {
   console.log('socket.io: User connected');
   socket.on('test message', (msg) => {
     console.log('socket.io: test message: ' + msg);
-    io.emit('test message', msg);
+    io.emit('test message', 'Node server says: Hello!');
   });
 });
 

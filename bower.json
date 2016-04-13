@@ -1,0 +1,39 @@
+{
+  "name": "ui-test",
+  "version": "0.0.0",
+  "authors": [
+    "Timo Myllymäki <timo.myllymaki@cybercom.com>"
+  ],
+  "main": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~1.3.0",
+    "iron-input": "polymerelements/iron-input",
+    "paper-checkbox": "polymerelements/paper-checkbox",
+    "paper-input": "polymerelements/paper-input",
+    "paper-drawer-panel": "polymerelements/paper-drawer-panel",
+    "paper-button": "polymerelements/paper-button",
+    "paper-fab": "polymerelements/paper-fab",
+    "paper-menu": "polymerelements/paper-menu",
+    "iron-icons": "polymerelements/iron-icons",
+    "paper-card": "polymerelements/paper-card",
+    "paper-header-panel": "polymerelements/paper-header-panel",
+    "paper-toolbar": "polymerelements/paper-toolbar",
+    "paper-item": "polymerelements/paper-item",
+    "paper-icon-button": "polymerelements/paper-icon-button",
+    "paper-material": "polymerelements/paper-material",
+    "font-roboto": "polymerelements/font-roboto",
+    "d3": "3.5.0",
+    "c3": "0.4.11-rc4",
+    "google-chart": "1.0.4",
+    "jquery": "2.2.0",
+    "socket.io-client": "1.4.5"
+  }
+}
