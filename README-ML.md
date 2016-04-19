@@ -112,8 +112,11 @@ The example dataset is downloaded from the internet and can be found from
 [datasets](./datasets) directory. It lists temperature and humidity values measured
 from different places, some indoors and some outdoors. The small
 utilities in the datasets directory can be used to parse and convert
-the data to JSON and to Octave MAT files for analysis. The data is already
-converted for convenience.
+the data to JSON for use in the frontend, and to Octave MAT files
+for analysis. The data is already converted for convenience.
+
+You can load the data into Octave and plot it by writing `load_data`
+in Octave ([load_data.m](./datasets/sml2010/load_data.m)).
 
 The node.js server just serves the static HTML files and the JSON
 example data files. The beef is in the [index.html](./public/index.html) file, executed on frontend.
