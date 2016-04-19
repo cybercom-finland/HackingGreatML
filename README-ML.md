@@ -143,3 +143,5 @@ or from the conference room.
 
 Then you can run the model against real-time IoS data to flag the current
 situation as "inside sauna" or "in the conference room".
+
+You can also use the visualization track to plot the data.
