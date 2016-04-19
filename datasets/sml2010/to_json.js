@@ -1,3 +1,6 @@
+// This node.js script loads the space separated TXT data
+// and outputs it as JSON.
+
 const _ = require('lodash');
 const readline = require('readline');
 const fs = require('fs');

@@ -1,3 +1,4 @@
+# This example loads the generated MAT files into Octave and plots one of them.
 load("externalTrainingSet.mat")
 load("externalTestSet.mat")
 load("externalValidationSet.mat")
