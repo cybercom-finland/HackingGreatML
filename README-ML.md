@@ -105,3 +105,38 @@ extracting working models.
 
 In general, machine learning is divided to supervised learning (you give training examples), unsupervised learning
 (no training examples, the system learns some structure from the raw data without guidance), and reinforced learning (where the system can experiment and gets rewards and punishments).
+
+## The Example Code
+
+The example dataset is downloaded from the internet and can be found from
+[datasets](./datasets) directory. It lists temperature and humidity values measured
+from different places, some indoors and some outdoors. The small
+utilities in the datasets directory can be used to parse and convert
+the data to JSON and to Octave MAT files for analysis. The data is already
+converted for convenience.
+
+The node.js server just serves the static HTML files and the JSON
+example data files. The beef is in the [index.html](./public/index.html) file, executed on frontend.
+
+The example code in frontend uses the SVM.js library to train the SVM
+against the training set data. The data is graphed using Google Charts.
+
+After the SVM has been trained, it is run against the test set data to
+verify its accuracy. SVM parameters can be tuned to improve the accuracy
+against the test set.
+
+After tuning, the validation set of data should be used to verify that
+the model performs well for new data also.
+
+The code only uses the first 100 datapoints, because using more will
+take a while and browser "this web page is not responding" will trigger.
+If you want, you can try moving the heavy processing into a web worker thread.
+
+## Connecting to real-time IoS data
+
+As a fun little exercise, you can collect a training set data from the real sensor in the IoT track,
+and label the data based on whether it was measured from inside the sauna
+or from the conference room.
+
+Then you can run the model against real-time IoS data to flag the current
+situation as "inside sauna" or "in the conference room".
