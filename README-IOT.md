@@ -7,8 +7,8 @@ This track is about using Amazon IoT, Siemens S7 and Edison board with temperatu
 Temperature and humidity measurements are made with Intel Edison with arduino comptible board for sensors
 ![alt tag](http://www.seeedstudio.com/wiki/images/thumb/0/03/Grove_Indoor_Environment_Kit_for_Edison_with_case.JPG/800px-Grove_Indoor_Environment_Kit_for_Edison_with_case.JPG)
 
-More iformation about sensors here:
-[http://www.seeedstudio.com/wiki/Grove_Indoor_Environment_Kit_for_Edison]Grove_kit
+More information about sensors here:
+[http://www.seeedstudio.com/wiki/Grove_Indoor_Environment_Kit_for_Edison](Grove_kit)
 
 # IoT solution
 
