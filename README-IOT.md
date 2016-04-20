@@ -8,7 +8,7 @@ Temperature and humidity measurements are made with Intel Edison with arduino co
 ![alt tag](http://www.seeedstudio.com/wiki/images/thumb/0/03/Grove_Indoor_Environment_Kit_for_Edison_with_case.JPG/800px-Grove_Indoor_Environment_Kit_for_Edison_with_case.JPG)
 
 More information about sensors here:
-[http://www.seeedstudio.com/wiki/Grove_Indoor_Environment_Kit_for_Edison](Grove_kit)
+[Grove kit](http://www.seeedstudio.com/wiki/Grove_Indoor_Environment_Kit_for_Edison)
 
 # IoT solution
 
