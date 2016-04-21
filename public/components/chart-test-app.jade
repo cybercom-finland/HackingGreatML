@@ -21,6 +21,16 @@ html
     template
       style
         include chart-test-app.css
-      div CHART TEST
-      div [[ test ]]
+      paper-header-panel.flex.main-panel
+        paper-toolbar
+          div CHART TEST
+          div [[ test ]]
+        div.content.fit
+          google-chart(
+            type='pie'
+            options='{"title": "Distribution of days in 2001Q1"}'
+            cols='[[ cols ]]'
+            rows='[[ rows ]]'
+            id="mychart"
+          )
   script(src="chart-test-app.js")

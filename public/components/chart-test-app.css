@@ -4,3 +4,10 @@
 .content {
   height: 100%;
 }
+#mychart {
+  height: 100%;
+  width: 100%;
+}
+paper-toolbar div {
+  margin-right: 10px;
+}

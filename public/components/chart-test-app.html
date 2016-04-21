@@ -23,10 +23,24 @@
 .content {
   height: 100%;
 }
+#mychart {
+  height: 100%;
+  width: 100%;
+}
+paper-toolbar div {
+  margin-right: 10px;
+}
 
       </style>
-      <div>CHART TEST</div>
-      <div>[[ test ]]</div>
+      <paper-header-panel class="flex main-panel">
+        <paper-toolbar>
+          <div>CHART TEST</div>
+          <div>[[ test ]]</div>
+        </paper-toolbar>
+        <div class="content fit">
+          <google-chart type="pie" options="{&quot;title&quot;: &quot;Distribution of days in 2001Q1&quot;}" cols="[[ cols ]]" rows="[[ rows ]]" id="mychart"></google-chart>
+        </div>
+      </paper-header-panel>
     </template>
   </dom-module>
   <script src="chart-test-app.js"></script>
