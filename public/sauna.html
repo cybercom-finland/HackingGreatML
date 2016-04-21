@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Machine learning example</title>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.9/angular.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.3.0/lodash.min.js"></script>
+<script src="https://sdk.amazonaws.com/js/aws-sdk-2.3.4.min.js"></script>
+<script type="text/javascript" src="lib/svm/svm.js"></script>
+</head>
+
+<body ng-app="app">
+<script type="text/javascript">
+"use strict";
+  angular.module('app', [])
+  .run(($http, $rootScope) => {
+    // Version 44 is buggy.
+    google.charts.load('43', {'packages':['corechart','scatter']});
+
+    // See the Configuring section to configure credentials in the SDK
+    AWS.config.update({accessKeyId: 'AKIAIEYDIIO5CV755QOQ', secretAccessKey: 'ACeRJ4JFNXkHymT+Rw01xqqtBSRhhLQ3oGBgeH5+'});
+
+    // Configure your region
+    AWS.config.region = 'eu-west-1';
+    
+    var dynamodb = new AWS.DynamoDB();
+    var params = {
+      TableName: 'HackingGreat_Measurements' /* required */
+    }
+
+        
+    
+    // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
+    let rawDataChart, regionChart,
+      indoorData, outdoorData, indoorTestData, outdoorTestData,
+      minT, minH, maxT, maxH;
+    const fastMode = true,
+      validateMode = false;
+    
+    const chartPromise = new Promise((resolve, reject) => {
+      function chartLoaded() {
+        rawDataChart = new google.visualization.ScatterChart(document.getElementById('raw-data-chart-div'));
+        regionChart = new google.visualization.ScatterChart(document.getElementById('region-chart-div'));
+        resolve();
+      };
+      google.charts.setOnLoadCallback(chartLoaded);
+    }).then(() => {
+      const dataPromise = new Promise((resolve, reject) => {
+        dynamodb.scan(params, function(err, data) {
+          if (err) console.log(err, err.stack); // an error occurred
+          resolve(data);
+        });
+      });
+      return dataPromise;
+    }).then((awsData) => {
+      var allData = awsData.Items.map((item) => {
+        return {
+          timestamp: item.timestamp.S,
+          date: new Date(Number(item.timestamp.S)).toDateString(),
+          h: item.payload.M.state.M.reported.M.humidity.N,
+          t: item.payload.M.state.M.reported.M.temp.N
+        };
+      });
+      indoorData = allData.filter((val) => {
+        return val.timestamp >= 1461248600000 && val.timestamp < 1461252494077;
+      });
+      outdoorData = allData.filter((val) => {
+         return val.timestamp >= 1461252494077 && val.timestamp < 1461252608000;
+      });
+      // Google Charts have this weird way of handling multiple sets, by setting the other value as null.
+      const dataRows = outdoorData.map((item) => {
+        return {c: [{v: item.t}, {v: item.h}, null, {v: item.date + ':' + item.timestamp}]};
+      }).concat(indoorData.map((item) => {
+        return {c: [{v: item.t}, null, {v: item.h}, {v: item.date + ':' + item.timestamp}]};
+      }));
+      const data = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity-out', label: 'sauna', type: 'number'},
+               {id: 'humidity-in', label: 'conference', type: 'number'},
+               {id: 'tooltip', role: 'tooltip', type: 'string'}
+               ],
+        rows: dataRows
+      });
+      const bothDataRows = outdoorData.concat(indoorData).map((item) => [item.t, item.h]);
+      // ... is the ES6 spread operator. Simply calculating min and max here.
+      minT = Math.min(...bothDataRows.map((item) => item[0]));
+      maxT = Math.max(...bothDataRows.map((item) => item[0]));
+      minH = Math.min(...bothDataRows.map((item) => item[1]));
+      maxH = Math.max(...bothDataRows.map((item) => item[1]));
+
+      const options = {
+        title: 'Temperature vs Humidity',
+        hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+        vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+        // legend: 'none',
+        colors: ["#101090","#109010"],
+        pointSize: 2
+      };
+      // convertOptions is for using the new Material Charts.
+      rawDataChart.draw(data, google.charts.Scatter.convertOptions(options));
+    }).then(() => {
+      // Here the actual Support Vector Machine initialization and execution happens:
+      const data = outdoorData.map((item) => [item.t, item.h]).concat(
+          indoorData.map((item) => [item.t, item.h]));
+      
+      // This designates the target labels (-1 and 1) for the sets. We will set -1 for outdoors, 1 for indoors.
+      const labels = outdoorData.map(() => -1).concat(indoorData.map(() => 1));
+      const svm = new svmjs.SVM();
+      const C = 1.0;
+      const σ = 3.0;
+      
+      // The training happens here. This takes a long time for a lot of data.
+      // FIXME: Move this to a web worker.
+      svm.train(data, labels, { kernel: 'rbf', rbfsigma: σ, C: C});
+
+      // FIXME:
+      outdoorTestData = [];
+      indoorTestData = [];
+      
+      const testData = outdoorTestData.map((item) => [item.t, item.h]).concat(
+          indoorTestData.map((item) => [item.t, item.h]));
+      const correctLabels = outdoorTestData.map(() => -1).concat(indoorTestData.map(() => 1));
+
+      const testLabels = svm.predict(testData);
+      // console.log(JSON.stringify(testLabels));
+      
+      // Counting incorrect classifications of the test data:
+      const correctCount = _.zip(testLabels, correctLabels).map((pair) => (pair[0] == pair[1])).filter((item) => item).length;
+      const resultText = correctCount + ' / ' + testData.length + ' predicted correctly. (' +
+          correctCount / testData.length * 100 + ' %). Parameter values: C: ' + C + ', σ: ' + σ;
+      console.log(resultText);
+      $rootScope.$apply(() => {
+        $rootScope.results = resultText;
+      });
+
+      // Drawing the regions, iterating over T and H:
+      let spanRegion = [];
+      const deltaH = (maxH-minH)/100;
+      const deltaT = (maxT-minT)/100;
+      for (let t = minT; t < maxT; t+=deltaT) for (let h = minH; h < maxH; h+=deltaH) {
+        spanRegion.push([t, h]);
+      }
+      const predictedRegion = svm.predict(spanRegion);
+
+      // Converting to weird Google Charts format...
+      const regionChartRows = predictedRegion.map((item, index) => {
+        if (item === -1) {
+          return {c: [{v: spanRegion[index][0]}, {v: spanRegion[index][1]}, null]};
+        } else {
+          return {c: [{v: spanRegion[index][0]}, null, {v: spanRegion[index][1]}]};
+        }
+      });
+      const options = {
+          title: 'Temperature vs Humidity regions',
+          hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+          vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+          // legend: 'none',
+          colors: ["#101090","#109010"],
+          pointSize: 2
+        };
+      const regionDataTable = new google.visualization.DataTable({
+        cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+               {id: 'humidity-out', label: 'sauna', type: 'number'},
+               {id: 'humidity-in', label: 'conference', type: 'number'}
+               ],
+        rows: regionChartRows
+      });
+      regionChart.draw(regionDataTable, google.charts.Scatter.convertOptions(options));
+    });
+  });
+</script>
+  <p>
+    Machine learning example.
+  </p>
+  <h1>Humidity against Temperature in conference room and in the sauna</h1>
+  <div id="raw-data-chart-div" style="width: 800px; height: 500px;">
+  </div>
+  <!-- <h1>Estimated regions</h1>-->
+  <div id="region-chart-div" style="width: 800px; height: 500px;">
+  </div>
+  <!-- <p id="results">{{results}}</p> -->
+</body>
+
+</html> 
