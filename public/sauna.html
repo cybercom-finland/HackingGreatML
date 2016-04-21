@@ -30,29 +30,79 @@
       TableName: 'HackingGreat_Measurements' /* required */
     }
 
-        
-    
-    // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
-    let rawDataChart, regionChart,
-      indoorData, outdoorData, indoorTestData, outdoorTestData,
-      minT, minH, maxT, maxH;
-    const fastMode = true,
-      validateMode = false;
-    
-    const chartPromise = new Promise((resolve, reject) => {
-      function chartLoaded() {
-        rawDataChart = new google.visualization.ScatterChart(document.getElementById('raw-data-chart-div'));
-        regionChart = new google.visualization.ScatterChart(document.getElementById('region-chart-div'));
-        resolve();
-      };
-      google.charts.setOnLoadCallback(chartLoaded);
-    }).then(() => {
-      const dataPromise = new Promise((resolve, reject) => {
+    function getAwsData() {
+      return new Promise((resolve, reject) => {
         dynamodb.scan(params, function(err, data) {
           if (err) console.log(err, err.stack); // an error occurred
           resolve(data);
         });
       });
+    }
+    
+    // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
+    let rawDataChart, regionChart, realtimeChart,
+      indoorData, outdoorData, indoorTestData, outdoorTestData,
+      minT, minH, maxT, maxH, svm;
+    const fastMode = true,
+      validateMode = false;
+
+    function getRealtimeData() {
+      return getAwsData().then((awsData) => {
+        const lastItem = awsData.Items[awsData.Items.length - 1];
+        return {
+          timestamp: lastItem.timestamp.S,
+          date: new Date(Number(lastItem.timestamp.S)).toDateString(),
+          h: lastItem.payload.M.state.M.reported.M.humidity.N,
+          t: lastItem.payload.M.state.M.reported.M.temp.N
+        };
+      });
+    }
+    
+    function updateRealtimeData() {
+      getRealtimeData().then((rtData) => {
+        const datapoint = [{c: [{v: rtData.t}, {v: rtData.h}, {v: rtData.date + ':' + rtData.timestamp}]}];
+        const rtDataTable = new google.visualization.DataTable({
+          cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
+                 {id: 'humidity', label: 'realtime', type: 'number'},
+                 {id: 'tooltip', role: 'tooltip', type: 'string'}
+                 ],
+          rows: datapoint
+        });
+        const options = {
+            title: 'Temperature vs Humidity',
+            hAxis: {title: 'Temperature', minValue: minT, maxValue: maxT},
+            vAxis: {title: 'Humidity', minValue: minH, maxValue: maxH},
+            // legend: 'none',
+            colors: ["#101090"],
+            pointSize: 2
+          };
+          // convertOptions is for using the new Material Charts.
+          realtimeChart.draw(rtDataTable, google.charts.Scatter.convertOptions(options));
+          const predictedRealtime = svm.predict([[rtData.t, rtData.h]]);
+          $rootScope.$apply(() => {
+            var predictionStr = "";
+            console.log(JSON.stringify(predictedRealtime));
+            if (predictedRealtime[0] == -1) {
+              predictionStr = "SAUNA";
+            } else if (predictedRealtime[0] == 1) {
+              predictionStr = "CONFERENCE";
+            }
+            $rootScope.prediction = predictionStr;
+          });
+          setTimeout(updateRealtimeData, 2000);
+      });
+    }
+    
+    const chartPromise = new Promise((resolve, reject) => {
+      function chartLoaded() {
+        rawDataChart = new google.visualization.ScatterChart(document.getElementById('raw-data-chart-div'));
+        regionChart = new google.visualization.ScatterChart(document.getElementById('region-chart-div'));
+        realtimeChart = new google.visualization.ScatterChart(document.getElementById('realtime-chart-div'));
+        resolve();
+      };
+      google.charts.setOnLoadCallback(chartLoaded);
+    }).then(() => {
+      const dataPromise = getAwsData();
       return dataPromise;
     }).then((awsData) => {
       var allData = awsData.Items.map((item) => {
@@ -107,7 +157,7 @@
       
       // This designates the target labels (-1 and 1) for the sets. We will set -1 for outdoors, 1 for indoors.
       const labels = outdoorData.map(() => -1).concat(indoorData.map(() => 1));
-      const svm = new svmjs.SVM();
+      svm = new svmjs.SVM();
       const C = 1.0;
       const σ = 3.0;
       
@@ -168,6 +218,7 @@
         rows: regionChartRows
       });
       regionChart.draw(regionDataTable, google.charts.Scatter.convertOptions(options));
+      setTimeout(updateRealtimeData, 2000);
     });
   });
 </script>
@@ -178,8 +229,11 @@
   <div id="raw-data-chart-div" style="width: 800px; height: 500px;">
   </div>
   <!-- <h1>Estimated regions</h1>-->
-  <div id="region-chart-div" style="width: 800px; height: 500px;">
+  <div id="region-chart-div" style="width: 800px; height: 500px;" style="float: left;">
   </div>
+  <div id="realtime-chart-div" style="width: 800px; height: 500px;" style="float: right;">
+  </div>
+  <p id="prediction">{{prediction}}</p>
   <!-- <p id="results">{{results}}</p> -->
 </body>
 
