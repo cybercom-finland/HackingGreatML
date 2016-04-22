@@ -42,7 +42,7 @@
     // Note: Validation data is not downloaded. It should only be used in the end to make sure that everything works.
     let rawDataChart, regionChart, realtimeChart,
       indoorData, outdoorData, indoorTestData, outdoorTestData,
-      minT, minH, maxT, maxH, svm;
+      minT, minH, maxT, maxH, svm, rtDataTrail = [];
     const fastMode = true,
       validateMode = false;
 
@@ -60,7 +60,8 @@
     
     function updateRealtimeData() {
       getRealtimeData().then((rtData) => {
-        const datapoint = [{c: [{v: rtData.t}, {v: rtData.h}, {v: rtData.date + ':' + rtData.timestamp}]}];
+        rtDataTrail.push([rtData.t, rtData.h]);
+        const datapoint = rtDataTrail.map((rtData2) => { return {c: [{v: rtData2[0]}, {v: rtData2[1]}, {v: rtData2.date + ':' + rtData2.timestamp}]};});
         const rtDataTable = new google.visualization.DataTable({
           cols: [{id: 'temperature', label: 'Temperature', type: 'number'},
                  {id: 'humidity', label: 'realtime', type: 'number'},
