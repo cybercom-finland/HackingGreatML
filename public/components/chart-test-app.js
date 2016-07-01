@@ -30,7 +30,7 @@ Polymer({
         document.getElementById("mychart").rows = rows;
     },
     initAWS(that) {
-        AWS.config.update({accessKeyId: 'AKIAIEYDIIO5CV755QOQ', secretAccessKey: 'ACeRJ4JFNXkHymT+Rw01xqqtBSRhhLQ3oGBgeH5+'});
+
         // Configure your region
         AWS.config.region = 'eu-west-1';
         var dynamodb = new AWS.DynamoDB();
