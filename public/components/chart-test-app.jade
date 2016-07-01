@@ -27,10 +27,11 @@ html
           div [[ test ]]
         div.content.fit
           google-chart(
-            type='pie'
+            type='line'
             options='{"title": "Distribution of days in 2001Q1"}'
             cols='[[ cols ]]'
             rows='[[ rows ]]'
             id="mychart"
           )
+  script(src="https://sdk.amazonaws.com/js/aws-sdk-2.3.4.min.js")
   script(src="chart-test-app.js")
